@@ -1,0 +1,22 @@
+<link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'style.css')-%>" type="text/css" media=screen>
+<script src="<%= url_for_static(:plugin => 'bayesian', :path => 'bayesian.js')-%>" type="text/javascript"></script>
+
+<script>
+render_request_list('<%= @project.name -%>');
+</script>
+
+<div class="widget-row">
+  <div class="widget-span widget-span-4 component_table_header">
+      <h1>All Bayesian Reports</h1>
+  </div>
+</div>
+
+<div class="widget-row">
+  <div class="widget">
+      <div id="requests-info" class="DivWithScroll" style="height:150px"></div>
+  </div>
+</div>
+
+<br/>
+<hr>
+<br/>

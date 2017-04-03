@@ -1,0 +1,60 @@
+<link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'style.css')-%>" type="text/css" media=screen>
+<script src="<%= url_for_static(:plugin => 'bayesian', :path => 'bayesian.js')-%>" type="text/javascript"></script>
+
+
+
+
+ <div class="widget-row widget-span">
+        <div class="widget-span">
+            <h1>Stack </h1>
+            <div class="nav-text"><span id="packageInfo"></span></div>
+
+        </div>
+ </div>
+ <div id="packageDeps" class="left-padding"></div>
+ <div id="errors" style='display:none'></div>
+ <div id="result-body" class="widget-row widget-span" style='display:none'>
+ <div class="widget-span">
+    <br>
+    <div class="stack_info_container">
+        <div class="widget-row widget-span" style="width:50%">
+            <div class="widget-span widget-span-10">
+              <h1><span class="nav-text"><span class="ui-icon ui-icon-info"></span>Usage</span><a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#usage-stack'><img title='Overview on how this stack is being used. Click for more info.' src="<%= url_for_static(:plugin => 'bayesian', :path => 'icons/266-question.svg')-%>"></img></a></h1>
+              <div id="usage"> </div>
+            </div>
+            <div class="widget-span widget-span-10">
+               <h1><span class="nav-text">Popularity</span><a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#popularity-stack'><img title='Overview on how popular this stack is. Click for more info.' src="<%= url_for_static(:plugin => 'bayesian', :path => 'icons/266-question.svg')-%>"></img></a></h1>
+              <div id="popularity"> </div>
+            </div>
+        </div>
+        <div class="widget-row widget-span" style="width:50%">
+            <div class="widget-span widget-span-10">
+               <h1><span class="nav-text">Licenses</span><a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#licenses-stack'><img title='Licenses found by OSLC. Click for more info.' src="<%= url_for_static(:plugin => 'bayesian', :path => 'icons/266-question.svg')-%>"></img></a></h1>
+               <div id='licenses'></div>
+            </div>
+            <div class="widget-span widget-span-10">
+               <h1><span class="nav-text">Security</span><a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#security-stack'><img  title='CVEs found in this stack. Click for more info.'  src="<%= url_for_static(:plugin => 'bayesian', :path => 'icons/266-question.svg')-%>"></img></a></h1>
+               <div id='security'></div>
+            </div>
+        </div>
+        <div class="widget-row widget-span" style="width:50%">
+            <div class="widget-span widget-span-10">
+               <h1><span class="nav-text">Metadata</span><a href="https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#metadata-stack"><img title="Info from metadata files. Click for more info." src="<%= url_for_static(:plugin => 'bayesian', :path => 'icons/266-question.svg')-%>"></img></a></h1>
+               <div id="metadata"></div>
+            </div>
+        </div>
+    </div>
+    </div>
+    <br>
+    <hr>
+    <BR>
+    <div class="widget-row">
+        <div class="widget-span widget-span-4">
+           <h1>Components</h1>
+        </div>
+    </div>
+    <br>
+    <div id='components' class="" style="height:100%">
+
+    </div>
+</div>

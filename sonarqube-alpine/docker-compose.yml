@@ -1,0 +1,13 @@
+version: "2"
+services:
+  sonarqube:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: docker-registry.usersys.redhat.com/bayesian/sonarqube-devel:6.0-alpine
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./extensions/plugins:/opt/sonarqube/extensions/plugins:z
+      - ./extensions/downloads:/opt/sonarqube/extensions/downloads:z
+    restart: always

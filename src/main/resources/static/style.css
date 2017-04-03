@@ -1,0 +1,133 @@
+.ps-rating {
+  display: table-cell;
+  vertical-align: middle;
+
+  font-size: 20px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  color: white;
+  background: green;
+  margin-left: 0px;
+}
+
+.version-old {
+  color: red;
+}
+
+.version-uptodate {
+  color: green;
+}
+
+.version-unknown {
+  color: orange;
+}
+
+.DivWithScroll{
+    height: 100px;
+    overflow:scroll;
+    overflow-x:hidden;
+}
+.break-word{
+  word-wrap: break-word;
+}
+
+div.component_table_header{
+  padding-bottom: 50px;
+}
+
+.nav-text {
+    vertical-align:middle;
+}
+
+.bottom-border {
+    border-bottom:1px solid black;
+}
+
+.stack_info_container{
+    display: inline-block;
+    width:100%;
+}
+
+.stack_reference_container{
+    display: inline-block;
+    width:100%;
+}
+
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.left-padding{
+    padding-left: 10px;
+}
+
+fieldset{
+  border-width: 2px;
+  border-style: groove;
+  border-color: threedface;
+  border-image: initial;
+  border-spacing: 10px;
+  text-align: center;
+}
+legend{
+  text-align: left;
+}
+
+.float_right {
+  float: right;
+}
+
+
+.float_left {
+  float: left;
+}
+
+.bayesian-navigate {
+  display: block;
+}
+.bayesian-navigate-to-left{
+  float: left;
+  top: 50%;
+  left: 50%;
+}
+.bayesian-navigate-to-right{
+  float: right;
+  top: 50%;
+  left: 50%;
+}
+
+.bordered_stack_table th, .bordered_stack_table td {
+  border: 1px solid black;
+  padding: 5px;
+  text-align: left;
+}
+
+.bordered_stack_table{
+  border-top: 2px solid black;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  border-bottom: 3px solid black;
+}
+
+table.requests_table{
+  border: none;  
+}
+.referenced_stack_container{
+  
+}
+
+.truncate {
+  width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stack_similarity{
+  text-align: center;
+  font-weight: bold;
+  align-content: center;
+  
+}
