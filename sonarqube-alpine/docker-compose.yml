@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: docker-registry.usersys.redhat.com/bayesian/sonarqube-devel:6.0-alpine
+    container_name: sonar
     ports:
       - "9000:9000"
     volumes:
