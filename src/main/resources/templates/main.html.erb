@@ -6,8 +6,98 @@ render_request_list('<%= @project.name -%>');
 </script>
 
 <div class="widget-row">
-  <div class="widget-span widget-span-4 component_table_header">
+  <div class="widget-span widget-span-12 component_table_header">
       <h1>All Bayesian Reports</h1>
+      
+         <div class="container">
+        <!-- Recommender container -->
+        <div id="recommenderCntr" class= "sub-cntr">
+            <h1 class="textCenter">Recommendations</h1>
+            <div id="recommenderListView" class="list-group-item list-view-pf-stacked recommendation-group-item recommendation-list">
+            </div>
+
+        </div>
+        <!-- overview container -->
+        <div id="overviewCntr" class= "sub-cntr">
+            <h1 class="textCenter">Stack Overview</h1>
+            <div>
+
+                <div class="col-md-3 overview-cards-cntr">
+                    <div class="overview-cards card-pf card-pf-utilization">
+                        <div>
+                            <h4 class="card-pf-title">
+                                Security
+                            </h4>
+                        </div>
+                        <div class="card-pf-body">
+                            <div class="row make-center">
+                                <ul id="cve-card-contents" class="list-group">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 overview-cards-cntr">
+                    <div class="overview-cards card-pf card-pf-utilization">
+                        <div>
+                            <h4 class="card-pf-title">
+                                Dependencies
+                            </h4>
+                        </div>
+                        <div class="card-pf-body">
+                            <div id="dependencies-card-contents" class="row make-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 overview-cards-cntr">
+                    <div class="overview-cards card-pf card-pf-utilization">
+                        <div>
+                            <h4 class="card-pf-title">
+                                Code Metrics
+                            </h4>
+                        </div>
+                        <div class="card-pf-body">
+                            <div id="codemetric-card-contents" class="row make-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 overview-cards-cntr">
+                    <div class="overview-cards card-pf card-pf-utilization">
+                        <div>
+                            <h4 class="card-pf-title">
+                                Total licences Used
+                            </h4>
+                        </div>
+                        <div class="card-pf-body">
+                            <div class="row make-center">
+                                <ul id="licence-card-contents" class="list-group">
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- dependencies container -->
+        <div id="dependenciesCntr" class="dependency-sub-cntr sub-cntr">
+            <h1 class="textCenter">Dependencies</h1>
+            <div id="dependenciesListView" class="list-group-item list-view-pf-stacked">
+                <table class="table table-striped table-bordered table-hover" id="dependenciesTable">
+                    <thead>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
   </div>
 </div>
 
