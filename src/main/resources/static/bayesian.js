@@ -3,6 +3,7 @@ var stack_data = {};
 function display_result(id, packageName, packageVersion, definitionFile) {
   definitionFile = definitionFile || "package.json";
   html = "";
+  //id = "f82f074df2884cddbb006461ed002ca1";
   apiHost = "${bayesian.api.server}";
   var url = apiHost + 'stack-analyses/' + id;
   stackAnalysesCall(url);
@@ -79,6 +80,12 @@ function formRecommendationList(stackAnalysesData) {
       && stackAnalysesData.result[0].distinct_licenses.length > 0) {
       buildLicenceList(stackAnalysesData.result[0].distinct_licenses);
     }
+
+    if (stackAnalysesData.hasOwnProperty('result') && stackAnalysesData.result[0].hasOwnProperty('components')
+      && stackAnalysesData.result[0].distinct_licenses.length > 0) {
+      formOverviewLayout(stackAnalysesData.result[0].components);
+    }
+
   }
 }
 
@@ -207,11 +214,45 @@ function buildDependenciesUI(dependencies) {
 
 // ***************** Overview *********************** //
 
-function formOverviewLayout() {
+function formOverviewLayout(compData) {
+  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0, cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0;
+  for (var i = 0; i < compData.length; i++) {
+    if (compData[i].hasOwnProperty('security') && compData[i].security.hasOwnProperty('vulnerabilities')) {
+      if (compData[i].security.vulnerabilities.length > 0 && compData[i].security.vulnerabilities[0].hasOwnProperty("id")) {
+        var CVSstr = compData[i].security.vulnerabilities[0].id + ":" + compData[i].security.vulnerabilities[0].cvss;
+        compAnalysesCVE.push(CVSstr);
+      }
+    }
+    if (compData[i].hasOwnProperty('code_metrics') && compData[i].code_metrics.hasOwnProperty('average_cyclomatic_complexity')) {
+      //todo code metric
+      codelineSum += compData[i].code_metrics.code_lines;
+      totalFileSum += compData[i].code_metrics.total_files;
+      cyclomaticComplexitySum += compData[i].code_metrics.average_cyclomatic_complexity
+    }
+    var dependencyObj = {}, dependencyArr = [];
+    dependencyObj.icon = "icon-help navbar-icon";
+    dependencyObj.value = compData.length;
+    dependencyObj.alias = "Declared dependencies";
+    dependencyArr.push(dependencyObj);
+    buildCardStackTemplate(dependencyArr, "dependencies-card-contents", 12);
+  }
+  var codeMetricObj = {}, codeMetricArr = [];
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = codelineSum;
+  codeMetricObj.alias = "lines of code";
+  codeMetricArr.push(codeMetricObj);
+  codeMetricObj = {}
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = (cyclomaticComplexitySum / compData.length) < 0 ? "NA" : (cyclomaticComplexitySum / compData.length);
+  codeMetricObj.alias = "Avg. cyclomatic complexity";
+  codeMetricArr.push(codeMetricObj);
+  codeMetricObj = {}
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = totalFileSum;
+  codeMetricObj.alias = "Total files";
+  codeMetricArr.push(codeMetricObj);
+  buildCardStackTemplate(codeMetricArr, "codemetric-card-contents", 4);
   buildCveList(compAnalysesCVE);
-  buildLicenceList(compAnalysesLicences);
-  buildCardStackTemplate(cardDataSetSummary, "codemetric-card-contents", 4);
-  buildCardStackTemplate(cardDataSetSummary, "dependencies-card-contents", 4);
 }
 
 function buildCveList(compAnalysesCVE) {
