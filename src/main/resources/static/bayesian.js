@@ -1,13 +1,15 @@
 var stack_data = {};
 
 function display_result(id, packageName, packageVersion, definitionFile) {
-  $j(document).ready(function () {
   definitionFile = definitionFile || "package.json";
   html = "";
+  //id = "f82f074df2884cddbb006461ed002ca1";
   apiHost = "${bayesian.api.server}";
-  var url = apiHost + '/stack-analyses/' + id;
-  document.getElementById("result-body").style.display = 'none';
+  var url = apiHost + 'stack-analyses/' + id;
+  stackAnalysesCall(url);
+}
 
+function stackAnalysesCall(url) {
   jQuery.ajax({
     url: url,
     error: function (xhr, ajaxOptions, thrownError) {
@@ -26,139 +28,272 @@ function display_result(id, packageName, packageVersion, definitionFile) {
         document.getElementById("result-body").style.display = 'none';
         return;
       }
-
-      stack_data = data;
-
-      var pkgInfo = "<h1>" + packageName + " " + packageVersion + "</h1>";
-      pkgInfo += "<ul class='nav navbar-nav nav-tabs'><li id='nav_link_package_json_data' class='active'><a onclick=\"switch_data_file('package.json');\">metadata file</a></li>";
-      if (stack_data.result.length > 1){
-        pkgInfo += "<li id='nav_link_npm-shrinkwrap_json_data'><a onclick=\"switch_data_file('npm-shrinkwrap.json');\">dependency lock file</a></li></ul>";
-      }else{
-        pkgInfo += "</ul>";
+      if (data) {
+        console.log('SUCCESS: ');
+        $j('.container').show();
+        formRecommendationList(data);
       }
-      document.getElementById("errors").style.display = 'none';
-      document.getElementById("packageInfo").innerHTML = pkgInfo;
-      render_stack_details(0);
-
-      for (var result in data.result) {
-        // NOTE: In widget-span-X, every X point is equal to 8.33 % of parent.
-        // Therefore we can only use 12 points of X in every row.
-        html += "<table id='component_list-" + data.result[result].manifest_name + "' class='data'><thead><tr class=''>";
-        html += "<th class=''>Ecosystem</div>";
-        html += "<th class=''>Package</div>";
-        html += "<th class=''>Version <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#version-components'><img title='Version used in this stack. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Latest Version <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#latest-version-components'><img title='Latest version available. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Public Usage <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#public-usage-components'><img title='Indication of how often this component is being used. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Relative Public Usage <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#relative-public-usage-components'><img title='Indication of how often this component is being used relatively to other components. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Red Hat Usage <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#red-hat-usage-components'><img title='Indication of usage within Red Hat. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Popularity <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#popularity-components'><img title='Indication of how popular this package is in terms of forks/stargazers counti. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Licenses <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#licenses-components'><img title='Licenses found. Click for more info.'  src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>CVSS <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md#cvss-components'><img title='The security vulnerability ranking based on the CVSS score. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Black Duck Security <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md'><img title='The  BlackDuck security vulnerability information. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-        html += "<th class=''>Black Duck Licences <a href='https://gitlab.cee.redhat.com/bayesian/Bayesian/tree/master/docs/stack-analysis.md'><img title='The  BlackDuck security vulnerability information. Click for more info.' src='/static/bayesian/icons/266-question.svg'></img></a>" + "</th>";
-
-        html += "</tr></thead><tbody>";
-
-        for (var component in data.result[result].components) {
-          var ecosystem = data.result[result].components[component].ecosystem;
-          var name = data.result[result].components[component].name;
-          var version = data.result[result].components[component].version;
-          var latest_version = data.result[result].components[component].latest_version;
-          var analyses_link = apiHost + "/analyses/" + ecosystem + "/" + name + "/" + version;
-          var cvss = data.result[result].components[component].cve_details;
-          var public_usage = handle_api_response_code(data.result[result].components[component].dependents_count);
-          var relative_public_usage = data.result[result].components[component].relative_usage;
-          var redhat_usage = get_redhat_channels(data.result[result].components[component].redhat_usage).toString().replace(/,/g, "<br/>");
-          var github_forks = handle_api_response_code(data.result[result].components[component].github_details.forks_count);
-          var github_stars = handle_api_response_code(data.result[result].components[component].github_details.stargazers_count);
-          var licenses = data.result[result].components[component].licenses;
-          var black_duck_details = data.result[result].components[component].blackduck_details;
-          var black_duck_security = "";
-          var black_duck_license = "";
-          if (typeof black_duck_details.security[0] == "undefined" || black_duck_details.security.length === 0) {
-            black_duck_security = " - ";
-          } else {
-            for (i = 0; i < black_duck_details.security.length; i++) {
-              black_duck_security += "<span>" + black_duck_details.security[i].baseScore + "</span>";
-            }
-          }
-
-          if (typeof black_duck_details.license == "undefined" || black_duck_details.license[0].name.length === 0) {
-            black_duck_license = " - ";
-          } else {
-            for (i = 0; i < black_duck_details.license.length; i++) {
-              black_duck_license += "<span>" + black_duck_details.license[i].name + "</span>";
-            }
-          }
-
-          var version_style = "version-uptodate";
-          if (latest_version === null) {
-            latest_version = "N/A";
-            version_style = "version-unknown";
-          } else if (latest_version != version) {
-            version_style = "version-old";
-          }
-
-          html += "<tr class='bottom-border'>";
-          html += "<td class=''>" + ecosystem + "</td>";
-          html += "<td class=''><a href='#componentDetailHeader' onclick=\"render_component_detail('" + ecosystem + "','" + name + "','" + version + "')\">" + name + "</a></td>";
-          html += "<td class='" + version_style + "'>" + version + "</td>";
-          html += "<td class=''>" + latest_version + "</td>";
-          html += "<td class=''>";
-          if (public_usage == "-" || public_usage == "N/A") {
-            html += "<span title='This datapoint is not available. Please contact us if you think this is an error'>" + public_usage + "</span>";
-          }
-          else {
-            html += public_usage;
-          }
-          html += "</td>";
-          html += "<td class=''>" + relative_public_usage + "</td>";
-          html += "<td class='break-word'>" + redhat_usage + "</td>";
-          html += "<td class=''>";
-          if (github_forks == "-" || github_forks == "N/A") {
-            html += "<span title='Github Forks: This datapoint is not available. Please contact us if you think this is an error'>N/A</span> / ";
-          }
-          else {
-            html += "<span title='Github Forks'>" + github_forks + "</span> / ";
-          }
-          if (github_stars == "-" || github_stars == "N/A") {
-            html += "<span title='Github Stars: This datapoint is not available. Please contact us if you think this is an error'>N/A</span>";
-          }
-          else {
-            html += "<span title='Github Stars'>" + github_stars + "</span>";
-          }
-          html += "</td>";
-          html += "<td class='break-word' >" + licenses + "</td>";
-
-          if (cvss.length === 0) {
-            html += "<td class=''> - </td>";
-          }
-          else {
-            cvssArray = [];
-            for (var element in cvss) {
-              cvssArray.push(parseFloat(cvss[element].cvss));
-            }
-
-            html += "<td class=''> ";
-            html += getCvssRank(getMaxCvss(cvssArray));
-            html += " </td>";
-          }
-          html += "<td class='break-word' >" + black_duck_security + "</td>";
-          html += "<td class='break-word' >" + black_duck_license + "</td>";
-          html += "</tr>";
-        }
-        html += "</tbody>";
-        document.getElementById("components").innerHTML = html;
-        $j("#component_list-" + data.result[result].manifest_name + " > tbody > tr:odd").addClass("odd");
-        $j("#component_list-" + data.result[result].manifest_name + " > tbody > tr:not(.odd)").addClass("even");
-
-        document.getElementById("result-body").style.display = 'block';
+      else {
+        console.log('Issue with data: ');
       }
-      document.getElementById("component_list-npm-shrinkwrap.json").style.display = 'none';
     }
   });
+}
+
+function formRecommendationList(stackAnalysesData) {
+  if (stackAnalysesData.hasOwnProperty('recommendation')) {
+    var recommendation = stackAnalysesData.recommendation.recommendations;
+    var dependencies = stackAnalysesData.components;
+    if (recommendation && recommendation.hasOwnProperty('similar_stacks') && recommendation.similar_stacks.length > 0) {
+      var similarStacks = recommendation.similar_stacks;
+      const analysis = similarStacks[0].analysis;
+      var missingPackages = analysis.missing_packages;
+      var versionMismatch = analysis.version_mismatch;
+
+      setRecommendations(missingPackages, versionMismatch);
+    } else {
+      $j('#recommenderListView').html('');
+      let strToAdd = '<div class="list-view-pf-main-info">' +
+        '<div class="list-view-pf-left">' +
+        '<span class="pficon pficon-ok"></span>' +
+        '</div>' +
+        '<div class="list-view-pf-body">' +
+        '<div class="list-view-pf-description">' +
+        '<div class="list-group-item-text">' +
+        '<b>We have no recommendations for you.</b> Your stack looks great!' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+      $j('#recommenderListView').append(strToAdd);
+    }
+
+    if (stackAnalysesData.hasOwnProperty('result') && stackAnalysesData.result.length > 0) {
+      var result = stackAnalysesData.result[0];
+      if (result.hasOwnProperty('components')) {
+        var components = result.components;
+        buildDependenciesUI(components);
+      }
+    }
+
+    if (stackAnalysesData.hasOwnProperty('result') && stackAnalysesData.result[0].hasOwnProperty('distinct_licenses')
+      && stackAnalysesData.result[0].distinct_licenses.length > 0) {
+      buildLicenceList(stackAnalysesData.result[0].distinct_licenses);
+    }
+
+    if (stackAnalysesData.hasOwnProperty('result') && stackAnalysesData.result[0].hasOwnProperty('components')
+      && stackAnalysesData.result[0].distinct_licenses.length > 0) {
+      formOverviewLayout(stackAnalysesData.result[0].components);
+    }
+
+  }
+}
+
+function setRecommendations(missing, version) {
+  var recommendations = [];
+  for (var i in missing) {
+    if (missing.hasOwnProperty(i)) {
+      var key = Object.keys(missing[i]);
+      var value;
+      recommendations.push({
+        suggestion: 'Recommended',
+        action: 'Add',
+        message: key[0] + ' ' + missing[i][key[0]]
+      });
+    }
+  }
+
+  for (var i in version) {
+    if (version.hasOwnProperty(i)) {
+      var key = Object.keys(version[i]);
+      var value;
+      recommendations.push({
+        suggestion: 'Recommended',
+        action: 'Upgrade',
+        message: key[0] + ' ' + version[i][key[0]]
+      });
+    }
+  }
+  constructRecommenderUI(recommendations)
+}
+
+function constructRecommenderUI(recommendations) {
+  $j('#recommenderListView').html('');
+  for (var i in recommendations) {
+    var strToAdd = '<div class="list-view-pf-main-info">' +
+      '<div class="list-view-pf-left">' +
+      '<span class="pficon pficon-info"></span>' +
+      '</div>' +
+      '<div class="list-view-pf-body">' +
+      '<div class="list-view-pf-description">' +
+      '<div class="list-group-item-text">' +
+      recommendations[i].suggestion + '-' + recommendations[i].action + '-' + recommendations[i].message
+    '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+    $j('#recommenderListView').append(strToAdd);
+  }
+}
+
+
+// ***************** dependencies *********************** //
+
+function buildDependenciesUI(dependencies) {
+  var length = dependencies.length;
+  var dependencyTable = $j('#dependenciesTable');
+  var tableHeader = dependencyTable.find('thead');
+  var tableBody = dependencyTable.find('tbody');
+
+  var keys = {
+    name: 'name',
+    currentVersion: 'curVersion',
+    latestVersion: 'latestVersion',
+    dateAdded: 'dateAdded',
+    publicPopularity: 'pubPopularity',
+    enterpriseUsage: 'enterpriseUsage',
+    teamUsage: 'teamUsage'
+  };
+  var headers = [
+    {
+      name: 'Name',
+      identifier: keys['name'],
+      isSortable: true
+    }, {
+      name: 'Current Version',
+      identifier: keys['currentVersion'],
+      isSortable: true
+    }, {
+      name: 'Latest Version',
+      identifier: keys['latestVersion']
+    }, {
+      name: 'Public Popularity',
+      identifier: keys['publicPopularity']
+    }, {
+      name: 'Enterprise Usage',
+      identifier: keys['enterpriseUsage'],
+      isSortable: true
+    }
+  ];
+
+
+  var dependenciesList = [];
+  var dependency, eachOne;
+  $j(tableBody).empty();
+  $j(tableHeader).empty();
+  for (var i = 0; i < length; ++i) {
+    dependency = {};
+    eachOne = dependencies[i];
+    dependency[keys['name']] = eachOne['name'];
+    dependency[keys['currentVersion']] = eachOne['version'];
+    dependency[keys['latestVersion']] = eachOne['latest_version'] || 'NA';
+    dependency[keys['publicPopularity']] =
+      eachOne['github_details'] ? (eachOne['github_details'].stargazers_count === -1 ? 'NA' : eachOne['github_details'].stargazers_count) : 'NA';
+    dependency[keys['enterpriseUsage']] = eachOne['enterpriseUsage'] || 'NA';
+
+    dependenciesList.push(dependency);
+  }
+
+  this.dependencies = {
+    headers: headers,
+    list: dependenciesList
+  };
+  var headerRow = $j('<tr />').appendTo(tableHeader);
+  $j.map(this.dependencies.headers, (key, value) => {
+    $j('<th>' + key.name + '</th>').appendTo(headerRow);
+  });
+  $j.map(this.dependencies.list, (key, value) => {
+    var bodyRow = $j('<tr />').appendTo(tableBody);
+    bodyRow.append('<td>' + key.name + '</td>');
+    bodyRow.append('<td>' + key.curVersion + '</td>');
+    bodyRow.append('<td>' + key.latestVersion + '</td>');
+    bodyRow.append('<td>' + key.pubPopularity + '</td>');
+    bodyRow.append('<td>' + key.enterpriseUsage + '</td>');
   });
 }
+
+// ***************** Overview *********************** //
+
+function formOverviewLayout(compData) {
+  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0, cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0;
+  for (var i = 0; i < compData.length; i++) {
+    if (compData[i].hasOwnProperty('security') && compData[i].security.hasOwnProperty('vulnerabilities')) {
+      if (compData[i].security.vulnerabilities.length > 0 && compData[i].security.vulnerabilities[0].hasOwnProperty("id")) {
+        var CVSstr = compData[i].security.vulnerabilities[0].id + ":" + compData[i].security.vulnerabilities[0].cvss;
+        compAnalysesCVE.push(CVSstr);
+      }
+    }
+    if (compData[i].hasOwnProperty('code_metrics') && compData[i].code_metrics.hasOwnProperty('average_cyclomatic_complexity')) {
+      //todo code metric
+      codelineSum += compData[i].code_metrics.code_lines;
+      totalFileSum += compData[i].code_metrics.total_files;
+      cyclomaticComplexitySum += compData[i].code_metrics.average_cyclomatic_complexity
+    }
+    var dependencyObj = {}, dependencyArr = [];
+    dependencyObj.icon = "icon-help navbar-icon";
+    dependencyObj.value = compData.length;
+    dependencyObj.alias = "Declared dependencies";
+    dependencyArr.push(dependencyObj);
+    buildCardStackTemplate(dependencyArr, "dependencies-card-contents", 12);
+  }
+  var codeMetricObj = {}, codeMetricArr = [];
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = codelineSum;
+  codeMetricObj.alias = "lines of code";
+  codeMetricArr.push(codeMetricObj);
+  codeMetricObj = {}
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = (cyclomaticComplexitySum / compData.length) < 0 ? "NA" : (cyclomaticComplexitySum / compData.length);
+  codeMetricObj.alias = "Avg. cyclomatic complexity";
+  codeMetricArr.push(codeMetricObj);
+  codeMetricObj = {}
+  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.value = totalFileSum;
+  codeMetricObj.alias = "Total files";
+  codeMetricArr.push(codeMetricObj);
+  buildCardStackTemplate(codeMetricArr, "codemetric-card-contents", 4);
+  buildCveList(compAnalysesCVE);
+}
+
+function buildCveList(compAnalysesCVE) {
+  $j('#cve-card-contents').empty();
+  for (var i in compAnalysesCVE) {
+    var dataSetCveIDScore = [];
+    dataSetCveIDScore = compAnalysesCVE[i].split(':');
+    var strToAdd = '<li class="list-group-item">' + dataSetCveIDScore[0] + ', CVSS score of ' + dataSetCveIDScore[1] + '</li>';
+    $j('#cve-card-contents').append(strToAdd);
+  }
+}
+
+function buildLicenceList(compAnalysesLicences) {
+  $j('#licence-card-contents').empty();
+  for (var i in compAnalysesLicences) {
+    var strToAdd = '<li class="list-group-item">' + compAnalysesLicences[i];
+    $j('#licence-card-contents').append(strToAdd);
+  }
+}
+
+function buildCardStackTemplate(cardDataSetSummary, cardcontentId, classGrid) {
+  $j('#' + cardcontentId).empty();
+  for (var i in cardDataSetSummary) {
+    var strToAdd = '<div class="col-md-${classGrid}">' +
+      '<div class="row f8-icon-size overview-code-metric-icon">' +
+      '<i class="fa ' + cardDataSetSummary[i].icon + '"></i>' +
+      '</div>' +
+      '<div class="row f8-chart-numeric">' +
+      cardDataSetSummary[i].value +
+      '</div>' +
+      '<div class="row f8-chart-description">' +
+      '<p>' + cardDataSetSummary[i].alias + '</p>' +
+      '</div>' +
+      '</div>';
+    $j('#' + cardcontentId).append(strToAdd);
+  }
+}
+
+
+
+
 
 function render_stack_details(index) {
   reset_stack_details();
@@ -186,7 +321,7 @@ function render_stack_details(index) {
   popularity_html += "<p> Components with Low Popularity: " + stack_data.result[index].popularity.low_popularity_components + "</p>";
   document.getElementById("popularity").innerHTML = popularity_html;
 
-  if (typeof(stack_data.result[index].metadata) != "undefined") {
+  if (typeof (stack_data.result[index].metadata) != "undefined") {
     var metadata_html = "<p> Components with tests: " + stack_data.result[index].metadata.components_with_tests + "</p>";
     metadata_html += "<p> Components with dependency lock file: " + stack_data.result[index].metadata.components_with_dependency_lock_file + "</p>";
     for (var engine in stack_data.result[index].metadata.required_engines) {
@@ -206,70 +341,20 @@ function reset_stack_details() {
   document.getElementById("metadata").innerHTML = "";
 }
 
+
 function render_request_list(project_name_param) {
   var first_project_request = [];
   $j(document).ready(function () {
     var apiHost = "${bayesian.api.server}";
-
     jQuery.ajax({
-      url: apiHost + '/stack-analyses/by-origin/' + project_name_param,
+      url: apiHost + 'stack-analyses/by-origin/' + project_name_param,
       type: 'GET',
       success: function (data) {
-        document.getElementById("requests-info").style.display = 'block';
         if (data.status == "success") {
           var html = "";
           var reqLen = data.results.length;
-          if (reqLen > 0) {
-            html = "<table class='requests_table' style='width:100%'><tr class='widget-row'>";
-            html += "<th class='widget-span widget-span-4 '>Request ID</th>";
-            html += "<th class='widget-span widget-span-2 '>Package</th>";
-            html += "<th class='widget-span widget-span-1 '>Version</th>";
-            html += "<th class='widget-span widget-span-2 '>Submit Time</th>";
-            html += "<th class='widget-span widget-span-3 '>Origin</th>";
-            html += "</tr>";
-          }
-
-          for (var i = 0, j = 0; i < reqLen; i++) {
-            var req = data.results[i];
-            try {
-              var requestJson = JSON.parse(req.requestJson);
-              var filename = requestJson.manifest[0].filename;
-              var content;
-              var name;
-              var version;
-              if (filename.endsWith(".json")) {
-                content = JSON.parse(requestJson.manifest[0].content);
-                name = content.name;
-                version = content.version;
-              } else if (filename.endsWith(".xml")) {
-                parser = new DOMParser();
-                xmlDoc = parser.parseFromString(requestJson.manifest[0].content, "text/xml");
-                name = xmlDoc.getElementsByTagName("name")[0].childNodes[0].nodeValue;
-                version = xmlDoc.getElementsByTagName("version")[0].childNodes[0].nodeValue;
-              }
-              if (project_name_param.indexOf(name) != -1) {
-              j++;
-              if (j == 1) {
-                display_result(req.id, name, version);
-              }
-              var origin = req.origin;
-              if (origin === null) {
-                origin = "N/A";
-              }
-
-              html += "<tr class='widget-row'>";
-              html += "<td class='widget-span widget-span-4 '><a onclick=\"display_result('" + req.id + "','" + name + "','" + version + "')\">" + req.id + "</a></td>";
-              html += "<td class='widget-span widget-span-2 '>" + name + "</td>";
-              html += "<td class='widget-span widget-span-1 '>" + version + "</td>";
-              html += "<td class='widget-span widget-span-2 '>" + req.submitTime.substring(0, 19) + "</td>";
-              html += "<td class='widget-span widget-span-3 '>" + origin + "</td>";
-              html += "</tr>";
-              }
-            }
-            catch (e) {
-              continue;
-            }
-          }
+          var req = data.results[0];
+          display_result(req.id, "", "");
           document.getElementById("requests-info").innerHTML = html;
         }
       }
