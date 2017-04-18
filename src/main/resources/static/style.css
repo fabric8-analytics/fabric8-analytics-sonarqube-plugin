@@ -140,17 +140,6 @@ table.requests_table{
     padding: 10px;
 }
 
-.overview-cards-cntr{
-     width: 25%;
-     float: left;
- }
-
-#overviewCntr:after {
-    content: '';
-    float: none;
-    clear: both;
-    display: block;
-}
 
 .dependency-sub-cntr{
      clear: both;
@@ -167,9 +156,27 @@ table.requests_table{
     border-bottom: 1px solid #ddd;
 }
 
-.list-view-pf-main-info{
-    height: 30px;
-    border: 1px solid;
-    padding: 10px;
-    margin: 5px;
+.recommendation-container {
+     border: 1px solid #ededed; 
+}
+
+.recommendation-container .recommendation-group-item .list-view-pf-main-info {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+#recommenderCntr {
+    padding: 15px 25px 15px 25px;
+}
+
+#overviewCntr {
+    padding: 15px 25px 15px 25px;
+    background: #fafafa;
+}
+
+#overviewCntr .overview-card {
+    height: 225px;
+    margin-left: 0;
 }
