@@ -120,7 +120,8 @@ function setRecommendations(missing, version) {
 function constructRecommenderUI(recommendations) {
   $j('#recommenderListView').html('');
   for (var i in recommendations) {
-    var strToAdd = '<div class="list-view-pf-main-info">' +
+    var strToAdd = '<div class="list-group-item list-view-pf-stacked recommendation-group-item recommendation-list">'+
+      '<div class="list-view-pf-main-info">' +
       '<div class="list-view-pf-left">' +
       '<span class="pficon pficon-info"></span>' +
       '</div>' +
@@ -129,6 +130,7 @@ function constructRecommenderUI(recommendations) {
       '<div class="list-group-item-text">' +
       recommendations[i].suggestion + '-' + recommendations[i].action + '-' + recommendations[i].message
     '</div>' +
+      '</div>' +
       '</div>' +
       '</div>' +
       '</div>';
@@ -276,7 +278,7 @@ function buildLicenceList(compAnalysesLicences) {
 function buildCardStackTemplate(cardDataSetSummary, cardcontentId, classGrid) {
   $j('#' + cardcontentId).empty();
   for (var i in cardDataSetSummary) {
-    var strToAdd = '<div class="col-md-${classGrid}">' +
+    var strToAdd = '<div class="col-md-'+classGrid+'">' +
       '<div class="row f8-icon-size overview-code-metric-icon">' +
       '<i class="fa ' + cardDataSetSummary[i].icon + '"></i>' +
       '</div>' +
