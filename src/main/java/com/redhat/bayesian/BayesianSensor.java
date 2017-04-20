@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
+//import org.json.JSONObject;
 import org.json.*;
 
 public class BayesianSensor implements Sensor {
@@ -70,7 +71,7 @@ public class BayesianSensor implements Sensor {
 		log.info(LOG_PREFIX + "Origin is: " + origin);
 
 		APIRestClient client = new APIRestClient();
-		String response = client.postMultipart(APIRestClient.getDefaultApiUrl() + "/stack-analyses",
+		String response = client.postMultipart(APIRestClient.getDefaultApiUrl() + "stack-analyses",
 												manifest_files.toArray(new String[0]),
 												origin);
 		try{
@@ -87,6 +88,29 @@ public class BayesianSensor implements Sensor {
 			Integer cvss_score = packageJson.getInt("cvss");
 			log.info("cvss score:" + cvss_score);
 			context.saveMeasure(new Measure<Double>(BayesianMetrics.CVSS, (double)cvss_score));*/
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(response);
+			String id  = json.get("id").toString();
+			String status_response  = "error";
+			int retry_count = 10;
+
+			while(retry_count!= 0){
+				// log.info(response.getClass().getName());
+				// String id = json.getString("id");
+				if(status_response.contains("error")){
+					TimeUnit.SECONDS.sleep(20);
+					String url = APIRestClient.getDefaultApiUrl() + "stack-analyses/" + id;
+					System.out.println("url");
+					System.out.println(url);
+					status_response = client.get(url);
+					retry_count -- ;
+					System.out.println(retry_count);
+				}
+				else {
+					log.info("satusResponse: " + status_response);
+					break;
+				}
+			}
 		}catch (Exception e) {
 			log.info("Bayesian API does not return stack-analyses data  ");
 		}
