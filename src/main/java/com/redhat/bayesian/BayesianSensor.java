@@ -107,12 +107,46 @@ public class BayesianSensor implements Sensor {
 					System.out.println(retry_count);
 				}
 				else {
-					log.info("satusResponse: " + status_response);
 					break;
 				}
+
+
+			//Integer cvss_score = packageJson.getInt("cvss");
+			//log.info("cvss score:" + cvss_score);
+			//context.saveMeasure(new Measure<Double>(BayesianMetrics.CVSS, (double)cvss_score));
+			}
+			if(!(status_response.contains("error"))){
+				JSONObject obj = (JSONObject) parser.parse(status_response);
+				JSONArray array = new JSONArray();
+				array = (JSONArray)obj.get("result");
+				JSONObject component_object = (JSONObject)array.get(0);
+				JSONArray components = (JSONArray)component_object.get("components");
+				log.info("result" + components);
+				Float cvss_score = Float.MIN_VALUE;
+				for( int i = 0; i < components.size(); i++){
+						JSONObject eachComponent = (JSONObject)components.get(i);
+						JSONObject security = (JSONObject)eachComponent.get("security");
+						if(security!=null){
+							JSONArray vulnerabilities = (JSONArray)security.get("vulnerabilities");
+							if (vulnerabilities!=null && vulnerabilities.size()!=0){
+								JSONObject each_item = (JSONObject)vulnerabilities.get(0);
+								if(each_item!=null){
+									String cvss = (String)each_item.get("cvss");
+									Float cvss_f = Float.valueOf(cvss);
+									if(cvss_f!=null){
+										if (cvss_f > cvss_score){
+											cvss_score = cvss_f;
+										}
+									}
+								}
+							}
+						}
+				}
+				context.saveMeasure(new Measure<Double>(BayesianMetrics.CVSS, (double)cvss_score));
+				log.info("cvss score:" + cvss_score);
 			}
 		}catch (Exception e) {
-			log.info("Bayesian API does not return stack-analyses data  ");
+			log.info(e.getMessage());
 		}
 	
 		log.info("Response: " + response);
