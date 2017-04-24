@@ -180,3 +180,28 @@ table.requests_table{
     height: 225px;
     margin-left: 0;
 }
+
+#overviewCntr .make-center{
+  text-align: center;
+  vertical-align: middle;
+  line-height: 31px;
+}
+
+.overview-cards {
+    height: 230px;
+    margin-left: 0;
+    overflow: scroll
+}
+
+.main-text-info {
+    font-weight: bold;
+}
+
+.overview-icon{
+  width: 50px;
+  height: 50px;
+}
+
+#error, #result-body{
+  display: none;
+}
