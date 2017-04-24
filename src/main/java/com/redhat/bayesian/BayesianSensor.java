@@ -122,7 +122,8 @@ public class BayesianSensor implements Sensor {
 				JSONObject component_object = (JSONObject)array.get(0);
 				JSONArray components = (JSONArray)component_object.get("components");
 				log.info("result" + components);
-				Float cvss_score = Float.MIN_VALUE;
+				// Double cvss_score = 4.0;
+				float cvss_score = (float) 0.0;
 				for( int i = 0; i < components.size(); i++){
 						JSONObject eachComponent = (JSONObject)components.get(i);
 						JSONObject security = (JSONObject)eachComponent.get("security");
@@ -142,8 +143,11 @@ public class BayesianSensor implements Sensor {
 							}
 						}
 				}
+				
 				context.saveMeasure(new Measure<Double>(BayesianMetrics.CVSS, (double)cvss_score));
 				log.info("cvss score:" + cvss_score);
+				
+				
 			}
 		}catch (Exception e) {
 			log.info(e.getMessage());
