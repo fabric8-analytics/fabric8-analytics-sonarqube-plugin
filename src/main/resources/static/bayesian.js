@@ -108,7 +108,7 @@ function setRecommendations(similarStack) {
           suggestion: 'Recommended',
           action: 'Add',
           message: key[0] + ' ' + missing[i][key[0]],
-          subMessage: stack_name + "has this dependency included"
+          subMessage: stack_name + " has this dependency included"
         });
       }
     }
@@ -122,7 +122,7 @@ function setRecommendations(similarStack) {
         suggestion: 'Recommended',
         action: 'Upgrade',
         message: key[0] + ' ' + version[i][key[0]],
-        subMessage: stack_name + "&nbsp;has differnt version of dependency"
+        subMessage: stack_name + " has differnt version of dependency"
       });
     }
   }
