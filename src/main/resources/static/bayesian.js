@@ -8,6 +8,44 @@ function display_result(id, packageName, packageVersion, definitionFile) {
   apiHost = "${bayesian.api.server}";
   var url = apiHost + 'stack-analyses/' + id;
   stackAnalysesCall(url);
+  //setLicenceDonut();
+}
+
+function setLicenceDonut(colData) {
+  var c3ChartDefaults = $j().c3ChartDefaults();
+
+  var donutData = {
+    type: 'donut',
+    colors: {
+      Cats: $j.pfPaletteColors.blue,
+      Hamsters: $j.pfPaletteColors.green,
+      Fish: $j.pfPaletteColors.orange,
+      Dogs: $j.pfPaletteColors.red
+    },
+    columns: colData,
+    onclick: function (d, i) { console.log("onclick", d, i); },
+    onmouseover: function (d, i) { console.log("onmouseover", d, i); },
+    onmouseout: function (d, i) { console.log("onmouseout", d, i); }
+  };
+
+  // Small Donut Chart
+  var donutChartSmallConfig = c3ChartDefaults.getDefaultDonutConfig('8');
+  donutChartSmallConfig.bindto = '#donut-chart-10';
+  donutChartSmallConfig.tooltip = { show: true };
+  donutChartSmallConfig.data = donutData;
+  donutChartSmallConfig.legend = {
+    show: true,
+    position: 'right'
+  };
+  donutChartSmallConfig.size = {
+    width: 250,
+    height: 115
+  };
+  donutChartSmallConfig.tooltip = {
+    contents: $j().pfDonutTooltipContents
+  };
+
+  var donutChartSmall = c3.generate(donutChartSmallConfig);
 }
 
 function stackAnalysesCall(url) {
@@ -231,7 +269,7 @@ function buildDependenciesUI(dependencies) {
 // ***************** Overview *********************** //
 
 function formOverviewLayout(compData) {
-  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0, cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0;
+  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0, cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0, licenseList = [], columnData = [];
   for (var i = 0; i < compData.length; i++) {
     if (compData[i].hasOwnProperty('security') && compData[i].security.hasOwnProperty('vulnerabilities')) {
       if (compData[i].security.vulnerabilities.length > 0 && compData[i].security.vulnerabilities[0].hasOwnProperty("id")) {
@@ -251,7 +289,24 @@ function formOverviewLayout(compData) {
     dependencyObj.alias = "Declared dependencies";
     dependencyArr.push(dependencyObj);
     buildCardStackTemplate(dependencyArr, "dependencies-card-contents", 12);
+    licenseList = licenseList.concat(compData[i].licenses);
+
   }
+
+  var licenseMap = _.groupBy(licenseList, function (value) {
+    return value;
+  });
+
+  for (let key in licenseMap) {
+    if (licenseMap.hasOwnProperty(key)) {
+      let temp = [];
+      temp.push(key);
+      temp.push(licenseMap[key].length);
+      columnData.push(temp);
+    }
+  }
+  setLicenceDonut(columnData)
+
   var codeMetricObj = {}, codeMetricArr = [];
   codeMetricObj.icon = "linesOfCode";
   codeMetricObj.value = codelineSum;
@@ -281,14 +336,14 @@ function buildCveList(compAnalysesCVE) {
       $j('#cve-card-contents').append(strToAdd);
     }
   } else {
-     var strToAdd = '<div class="col-md-12">' +
+    var strToAdd = '<div class="col-md-12">' +
       '<div class="row f8-icon-size overview-code-metric-icon"><br>' +
       '<img class="overview-icon" src="/static/bayesian/icons/269-info.svg"></img>' +
       '</div><br>' +
       '<div class="row f8-chart-numeric">No CVE or CVSS data available' +
       '</div>' +
       '</div>';
-      $j('#cve-card-contents').append(strToAdd);
+    $j('#cve-card-contents').append(strToAdd);
   }
 }
 

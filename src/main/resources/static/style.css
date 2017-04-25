@@ -209,3 +209,16 @@ table.requests_table{
 .list-view-pf-description{
   width: 80% !important;
 }
+
+.c3-tooltip-container{
+font-size:13px;
+padding: 3px 6px;
+background: #393f44;
+box-shadow: none;
+opacity: 0.9;
+color: #fff;
+}
+
+.c3-tooltip td{
+  padding-left:5px; 
+}
