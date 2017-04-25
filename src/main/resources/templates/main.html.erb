@@ -10,9 +10,7 @@ render_request_list('<%= @project.name -%>');
 
 <div class="widget-row test-comp">
   <div class="widget-span widget-span-12 component_table_header">
-      <h1>All Bayesian Reports</h1>
-      
-         <div class="container-fluid">
+    <div id="result-body" class="container-fluid">
         <!-- Recommender container -->
         <div id="recommenderCntr" class= "sub-cntr">
             <h1 class="textCenter">Recommendations</h1>
@@ -101,15 +99,9 @@ render_request_list('<%= @project.name -%>');
         </div>
     </div>
 
+
+    <div id="errors" class="container-fluid">
+    </div>
   </div>
 </div>
 
-<div class="widget-row">
-  <div class="widget">
-      <div id="requests-info" class="DivWithScroll" style="height:150px"></div>
-  </div>
-</div>
-
-<br/>
-<hr>
-<br/>

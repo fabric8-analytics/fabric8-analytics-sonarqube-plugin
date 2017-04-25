@@ -4,6 +4,7 @@ function display_result(id, packageName, packageVersion, definitionFile) {
   definitionFile = definitionFile || "package.json";
   html = "";
   //id = "f82f074df2884cddbb006461ed002ca1";
+  //id = '4dee41bf900a4c05aa96c91bd7a064c3';
   apiHost = "${bayesian.api.server}";
   var url = apiHost + 'stack-analyses/' + id;
   stackAnalysesCall(url);
@@ -29,8 +30,9 @@ function stackAnalysesCall(url) {
         return;
       }
       if (data) {
+        document.getElementById("errors").style.display = 'none';
+        document.getElementById("result-body").style.display = 'block';
         console.log('SUCCESS: ');
-        $j('.container').show();
         formRecommendationList(data);
       }
       else {
@@ -50,12 +52,14 @@ function formRecommendationList(stackAnalysesData) {
       var missingPackages = analysis.missing_packages;
       var versionMismatch = analysis.version_mismatch;
 
-      setRecommendations(missingPackages, versionMismatch);
+      setRecommendations(recommendation.similar_stacks[0])
+
+      // missingPackages, versionMismatch);
     } else {
       $j('#recommenderListView').html('');
       let strToAdd = '<div class="list-view-pf-main-info">' +
         '<div class="list-view-pf-left">' +
-        '<span class="pficon pficon-ok"></span>' +
+        '<img src="/static/bayesian/icons/269-info.svg"></img>' +
         '</div>' +
         '<div class="list-view-pf-body">' +
         '<div class="list-view-pf-description">' +
@@ -89,17 +93,24 @@ function formRecommendationList(stackAnalysesData) {
   }
 }
 
-function setRecommendations(missing, version) {
-  var recommendations = [];
-  for (var i in missing) {
-    if (missing.hasOwnProperty(i)) {
-      var key = Object.keys(missing[i]);
-      var value;
-      recommendations.push({
-        suggestion: 'Recommended',
-        action: 'Add',
-        message: key[0] + ' ' + missing[i][key[0]]
-      });
+function setRecommendations(similarStack) {
+  if (similarStack) {
+    const analysis = similarStack.analysis;
+    var missing = analysis.missing_packages;
+    var version = analysis.version_mismatch;
+    var recommendations = [];
+    var stack_name = similarStack.stack_name || "An existing stack";
+    for (var i in missing) {
+      if (missing.hasOwnProperty(i)) {
+        var key = Object.keys(missing[i]);
+        var value;
+        recommendations.push({
+          suggestion: 'Recommended',
+          action: 'Add',
+          message: key[0] + ' ' + missing[i][key[0]],
+          subMessage: stack_name + " has this dependency included"
+        });
+      }
     }
   }
 
@@ -110,7 +121,8 @@ function setRecommendations(missing, version) {
       recommendations.push({
         suggestion: 'Recommended',
         action: 'Upgrade',
-        message: key[0] + ' ' + version[i][key[0]]
+        message: key[0] + ' ' + version[i][key[0]],
+        subMessage: stack_name + " has differnt version of dependency"
       });
     }
   }
@@ -120,16 +132,18 @@ function setRecommendations(missing, version) {
 function constructRecommenderUI(recommendations) {
   $j('#recommenderListView').html('');
   for (var i in recommendations) {
-    var strToAdd = '<div class="list-group-item list-view-pf-stacked recommendation-group-item recommendation-list">'+
+    var strToAdd = '<div class="list-group-item list-view-pf-stacked recommendation-group-item recommendation-list">' +
       '<div class="list-view-pf-main-info">' +
       '<div class="list-view-pf-left">' +
-      '<span class="pficon pficon-info"></span>' +
+      //'<span class="fa fa-info-circle"></span>' +
+      '<img src="/static/bayesian/icons/269-info.svg"></img>' +
       '</div>' +
       '<div class="list-view-pf-body">' +
       '<div class="list-view-pf-description">' +
       '<div class="list-group-item-text">' +
-      recommendations[i].suggestion + '-' + recommendations[i].action + '-' + recommendations[i].message
-    '</div>' +
+      '<span class="main-text-info">' + recommendations[i].suggestion + '-' + recommendations[i].action + '-' + recommendations[i].message + '</span>' +
+      '<span class="addtional-info">&nbsp;' + recommendations[i].subMessage + '</span>' +
+      '</div>' +
       '</div>' +
       '</div>' +
       '</div>' +
@@ -232,24 +246,24 @@ function formOverviewLayout(compData) {
       cyclomaticComplexitySum += compData[i].code_metrics.average_cyclomatic_complexity
     }
     var dependencyObj = {}, dependencyArr = [];
-    dependencyObj.icon = "icon-help navbar-icon";
+    dependencyObj.icon = "dependency";
     dependencyObj.value = compData.length;
     dependencyObj.alias = "Declared dependencies";
     dependencyArr.push(dependencyObj);
     buildCardStackTemplate(dependencyArr, "dependencies-card-contents", 12);
   }
   var codeMetricObj = {}, codeMetricArr = [];
-  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.icon = "linesOfCode";
   codeMetricObj.value = codelineSum;
   codeMetricObj.alias = "lines of code";
   codeMetricArr.push(codeMetricObj);
   codeMetricObj = {}
-  codeMetricObj.icon = "icon-help navbar-icon";
-  codeMetricObj.value = (cyclomaticComplexitySum / compData.length) < 0 ? "NA" : (cyclomaticComplexitySum / compData.length);
+  codeMetricObj.icon = "cyclomatic";
+  codeMetricObj.value = (cyclomaticComplexitySum / compData.length) < 0 ? "NA" : (cyclomaticComplexitySum / compData.length).toFixed(2);
   codeMetricObj.alias = "Avg. cyclomatic complexity";
   codeMetricArr.push(codeMetricObj);
   codeMetricObj = {}
-  codeMetricObj.icon = "icon-help navbar-icon";
+  codeMetricObj.icon = "totalFiles";
   codeMetricObj.value = totalFileSum;
   codeMetricObj.alias = "Total files";
   codeMetricArr.push(codeMetricObj);
@@ -259,11 +273,22 @@ function formOverviewLayout(compData) {
 
 function buildCveList(compAnalysesCVE) {
   $j('#cve-card-contents').empty();
-  for (var i in compAnalysesCVE) {
-    var dataSetCveIDScore = [];
-    dataSetCveIDScore = compAnalysesCVE[i].split(':');
-    var strToAdd = '<li class="list-group-item">' + dataSetCveIDScore[0] + ', CVSS score of ' + dataSetCveIDScore[1] + '</li>';
-    $j('#cve-card-contents').append(strToAdd);
+  if (compAnalysesCVE.length > 0) {
+    for (var i in compAnalysesCVE) {
+      var dataSetCveIDScore = [];
+      dataSetCveIDScore = compAnalysesCVE[i].split(':');
+      var strToAdd = '<li class="list-group-item">' + dataSetCveIDScore[0] + ', CVSS score of ' + dataSetCveIDScore[1] + '</li>';
+      $j('#cve-card-contents').append(strToAdd);
+    }
+  } else {
+     var strToAdd = '<div class="col-md-12">' +
+      '<div class="row f8-icon-size overview-code-metric-icon"><br>' +
+      '<img class="overview-icon" src="/static/bayesian/icons/269-info.svg"></img>' +
+      '</div><br>' +
+      '<div class="row f8-chart-numeric">No CVE or CVSS data available' +
+      '</div>' +
+      '</div>';
+      $j('#cve-card-contents').append(strToAdd);
   }
 }
 
@@ -278,9 +303,9 @@ function buildLicenceList(compAnalysesLicences) {
 function buildCardStackTemplate(cardDataSetSummary, cardcontentId, classGrid) {
   $j('#' + cardcontentId).empty();
   for (var i in cardDataSetSummary) {
-    var strToAdd = '<div class="col-md-'+classGrid+'">' +
-      '<div class="row f8-icon-size overview-code-metric-icon">' +
-      '<i class="fa ' + cardDataSetSummary[i].icon + '"></i>' +
+    var strToAdd = '<div class="col-md-' + classGrid + '">' +
+      '<div class="row f8-icon-size overview-code-metric-icon"><br>' +
+      '<img class="overview-icon" src="/static/bayesian/icons/' + cardDataSetSummary[i].icon + '.png"></img>' +
       '</div>' +
       '<div class="row f8-chart-numeric">' +
       cardDataSetSummary[i].value +
@@ -357,7 +382,7 @@ function render_request_list(project_name_param) {
           var reqLen = data.results.length;
           var req = data.results[0];
           display_result(req.id, "", "");
-          document.getElementById("requests-info").innerHTML = html;
+          //document.getElementById("requests-info").innerHTML = html;
         }
       }
     });
