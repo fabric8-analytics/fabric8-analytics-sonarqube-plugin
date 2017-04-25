@@ -42,7 +42,8 @@ public class APIRestClient {
 	
 	public String get(String url) {
 		String response = "";
-		HttpClient httpClient = new DefaultHttpClient();
+		//HttpClient httpClient = new DefaultHttpClient();
+		CloseableHttpClient httpClient = HttpClients.createDefault();
     try {
       HttpGet httpGetRequest = new HttpGet(url);
 			ResponseHandler<String> responseHandler = new BasicResponseHandler();
