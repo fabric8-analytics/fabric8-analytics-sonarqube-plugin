@@ -191,7 +191,6 @@ table.requests_table{
 .overview-cards {
     height: 240px;
     margin-left: 0;
-    overflow: scroll
 }
 
 .main-text-info {
@@ -222,4 +221,14 @@ color: #fff;
 
 .c3-tooltip td{
   padding-left:5px; 
+}
+
+.security-icon{
+  width: 24px;
+  height: 24px;
+}
+
+.dependencies-cve-icon{
+  width: 15px;
+  height: 15px;
 }

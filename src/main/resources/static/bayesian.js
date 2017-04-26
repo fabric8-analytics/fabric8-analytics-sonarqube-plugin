@@ -8,12 +8,10 @@ function display_result(id, packageName, packageVersion, definitionFile) {
   apiHost = "${bayesian.api.server}";
   var url = apiHost + 'stack-analyses/' + id;
   stackAnalysesCall(url);
-  //setLicenceDonut();
 }
 
 function setLicenceDonut(colData) {
   var c3ChartDefaults = $j().c3ChartDefaults();
-
   var donutData = {
     type: 'donut',
     colors: {
@@ -61,7 +59,7 @@ function stackAnalysesCall(url) {
       var status = xhr.status;
       var msg = JSON.parse(xhr.responseText);
 
-      if (status == 202) { // Receives an Accept but not Done yet
+      if (status == 202) {
         document.getElementById("errors").innerHTML = "<div class=''>" + msg.error + "</div>";
         document.getElementById("errors").style.display = 'block';
         document.getElementById("result-body").style.display = 'none';
@@ -91,8 +89,6 @@ function formRecommendationList(stackAnalysesData) {
       var versionMismatch = analysis.version_mismatch;
 
       setRecommendations(recommendation.similar_stacks[0])
-
-      // missingPackages, versionMismatch);
     } else {
       $j('#recommenderListView').html('');
       let strToAdd = '<div class="list-view-pf-main-info">' +
@@ -173,7 +169,6 @@ function constructRecommenderUI(recommendations) {
     var strToAdd = '<div class="list-group-item list-view-pf-stacked recommendation-group-item recommendation-list">' +
       '<div class="list-view-pf-main-info">' +
       '<div class="list-view-pf-left">' +
-      //'<span class="fa fa-info-circle"></span>' +
       '<img src="/static/bayesian/icons/269-info.svg"></img>' +
       '</div>' +
       '<div class="list-view-pf-body">' +
@@ -193,44 +188,119 @@ function constructRecommenderUI(recommendations) {
 
 // ***************** dependencies *********************** //
 
-function buildDependenciesUI(dependencies) {
-  var length = dependencies.length;
-  var dependencyTable = $j('#dependenciesTable');
-  var tableHeader = dependencyTable.find('thead');
-  var tableBody = dependencyTable.find('tbody');
+var cvssScale = {
+    low: {
+      start: 0.0,
+      end: 3.9,
+      iconClass: 'warningCVE',
+      displayClass: 'progress-bar-warning'
+    },
+    medium: {
+      start: 4.0,
+      end: 6.9,
+      iconClass: 'warningCVE',
+      displayClass: 'progress-bar-warning'
+    },
+    high: {
+      start: 7.0,
+      end: 10.0,
+      iconClass: 'dangerCVE',
+      displayClass: 'progress-bar-danger'
+    }
+  };
 
-  var keys = {
+   var keys = {
     name: 'name',
     currentVersion: 'curVersion',
     latestVersion: 'latestVersion',
+    cveid: 'cveid',
+    cvss: 'cvss',
+    license: 'license',
+    linesOfCode: 'linesOfCode',
+    avgCycloComplexity: 'avgCycloComplexity',
+    noOfFiles: 'noOfFiles',
     dateAdded: 'dateAdded',
     publicPopularity: 'pubPopularity',
     enterpriseUsage: 'enterpriseUsage',
     teamUsage: 'teamUsage'
   };
+
   var headers = [
     {
       name: 'Name',
-      identifier: keys['name'],
+      identifier: this.keys['name'],
       isSortable: true
     }, {
       name: 'Current Version',
-      identifier: keys['currentVersion'],
+      identifier: this.keys['currentVersion'],
       isSortable: true
     }, {
       name: 'Latest Version',
-      identifier: keys['latestVersion']
+      identifier: this.keys['latestVersion']
     }, {
-      name: 'Public Popularity',
-      identifier: keys['publicPopularity']
+      name: 'CVE ID',
+      identifier: this.keys['cveid']
     }, {
-      name: 'Enterprise Usage',
-      identifier: keys['enterpriseUsage'],
+      name: 'CVSS',
+      identifier: this.keys['cvss']
+    }, {
+      name: 'License',
+      identifier: this.keys['license']
+    }, {
+      name: 'Lines Of Code',
+      identifier: this.keys['linesOfCode'],
+      isSortable: true
+    }, {
+      name: 'Avgerage Cyclomatic Complexity',
+      identifier: this.keys['avgCycloComplexity']
+    }, {
+      name: 'Total Files',
+      identifier: this.keys['noOfFiles'],
       isSortable: true
     }
   ];
 
+function getCvssObj(score) {
+  if (score) {
+    var iconClass = cvssScale.medium.iconClass;
+    var displayClass = cvssScale.medium.displayClass;
+    if (score >= cvssScale.high.start) {
+      iconClass = cvssScale.high.iconClass;
+      displayClass = cvssScale.high.displayClass;
+    }
+    return {
+      iconClass: iconClass,
+      displayClass: displayClass,
+      value: score,
+      percentScore: (score / 10 * 100)
+    };
+  }
+}
 
+function getCveId(security) {
+  if (security && security.vulnerabilities && security.vulnerabilities[0].id) {
+    return security.vulnerabilities[0].id;
+  } else {
+    return 'NA';
+  }
+}
+
+function getCvssString(security) {
+  if (security && security.vulnerabilities && security.vulnerabilities[0].cvss) {
+    var cvssValue = parseFloat(security.vulnerabilities[0].cvss);
+    return getCvssObj(cvssValue);
+  } else {
+    return {
+      value: 'NA'
+    };
+  }
+}
+
+function buildDependenciesUI(dependencies) {
+  var length = dependencies.length;
+  var dependencyTable = $j('#dependenciesTable');
+  var tableHeader = dependencyTable.find('thead');
+  var tableBody = dependencyTable.find('tbody');
   var dependenciesList = [];
   var dependency, eachOne;
   $j(tableBody).empty();
@@ -238,47 +308,69 @@ function buildDependenciesUI(dependencies) {
   for (var i = 0; i < length; ++i) {
     dependency = {};
     eachOne = dependencies[i];
+    var cycloMaticValue = eachOne['code_metrics']['average_cyclomatic_complexity'];
     dependency[keys['name']] = eachOne['name'];
     dependency[keys['currentVersion']] = eachOne['version'];
     dependency[keys['latestVersion']] = eachOne['latest_version'] || 'NA';
-    dependency[keys['publicPopularity']] =
-      eachOne['github_details'] ? (eachOne['github_details'].stargazers_count === -1 ? 'NA' : eachOne['github_details'].stargazers_count) : 'NA';
-    dependency[keys['enterpriseUsage']] = eachOne['enterpriseUsage'] || 'NA';
+    dependency[keys['cveid']] = getCveId(eachOne['security']);
+    dependency[keys['cvss']] = getCvssString(eachOne['security']);
+    dependency[keys['license']] = eachOne['licenses'];
+    dependency[keys['linesOfCode']] = eachOne['code_metrics']['code_lines'];
 
+    dependency[keys['avgCycloComplexity']]
+      = cycloMaticValue !== -1 ? cycloMaticValue : 'NA';
+    dependency[keys['noOfFiles']] = eachOne['code_metrics']['total_files'];
     dependenciesList.push(dependency);
   }
 
-  this.dependencies = {
+  dependencies = {
     headers: headers,
     list: dependenciesList
   };
   var headerRow = $j('<tr />').appendTo(tableHeader);
-  $j.map(this.dependencies.headers, (key, value) => {
+  var strCvss = '';
+  $j.map(dependencies.headers, (key, value) => {
     $j('<th>' + key.name + '</th>').appendTo(headerRow);
   });
-  $j.map(this.dependencies.list, (key, value) => {
+  $j.map(dependencies.list, (key, value) => {
     var bodyRow = $j('<tr />').appendTo(tableBody);
     bodyRow.append('<td>' + key.name + '</td>');
     bodyRow.append('<td>' + key.curVersion + '</td>');
     bodyRow.append('<td>' + key.latestVersion + '</td>');
-    bodyRow.append('<td>' + key.pubPopularity + '</td>');
-    bodyRow.append('<td>' + key.enterpriseUsage + '</td>');
+
+    bodyRow.append('<td>' + key.cveid + '</td>');
+    if (key.cvss.value !== 'NA') {
+      strCvss = '<td><span data-toggle="tooltip" data-placement="top">' +
+        '<img class="dependencies-cve-icon" src="/static/bayesian/icons/' + key.cvss.iconClass + '.png"></img>' +
+        key.cvss.value
+        + '</span></td>';
+    } else {
+      strCvss = '<td><span>' +
+        key.cvss.value
+        + '</span></td>';
+    }
+
+    bodyRow.append(strCvss);
+    bodyRow.append('<td>' + key.license + '</td>');
+    bodyRow.append('<td>' + key.linesOfCode + '</td>');
+    bodyRow.append('<td>' + key.avgCycloComplexity + '</td>');
+    bodyRow.append('<td>' + key.noOfFiles + '</td>');
+
   });
 }
 
 // ***************** Overview *********************** //
 
 function formOverviewLayout(compData) {
-  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0, cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0, licenseList = [], columnData = [];
+  var compAnalysesCVE = [], codelineSum = 0, totalFileSum = 0,
+    cyclomaticComplexitySum = 0, cyclomaticComplexityAvg = 0,
+    licenseList = [], columnData = [];
+  var cvssObj = {
+    id: '',
+    value: -1 // -1 to say that no package is vulnerable
+  };
   for (var i = 0; i < compData.length; i++) {
-    if (compData[i].hasOwnProperty('security') && compData[i].security.hasOwnProperty('vulnerabilities')) {
-      if (compData[i].security.vulnerabilities.length > 0 && compData[i].security.vulnerabilities[0].hasOwnProperty("id")) {
-        var CVSstr = compData[i].security.vulnerabilities[0].id + ":" + compData[i].security.vulnerabilities[0].cvss;
-        compAnalysesCVE.push(CVSstr);
-      }
-    }
     if (compData[i].hasOwnProperty('code_metrics') && compData[i].code_metrics.hasOwnProperty('average_cyclomatic_complexity')) {
-      //todo code metric
       codelineSum += compData[i].code_metrics.code_lines;
       totalFileSum += compData[i].code_metrics.total_files;
       cyclomaticComplexitySum += compData[i].code_metrics.average_cyclomatic_complexity
@@ -291,7 +383,16 @@ function formOverviewLayout(compData) {
     buildCardStackTemplate(dependencyArr, "dependencies-card-contents", 12);
     licenseList = licenseList.concat(compData[i].licenses);
 
+    if (compData[i].security && compData[i].security.vulnerabilities && compData[i].security.vulnerabilities[0].cvss) {
+      var value = parseFloat(compData[i].security.vulnerabilities[0].cvss);
+      if (value > cvssObj.value) {
+        cvssObj.value = value;
+        cvssObj.id = compData[i].security.vulnerabilities[0].id;
+      }
+    }
   }
+
+  buildSecurity(cvssObj);
 
   var licenseMap = _.groupBy(licenseList, function (value) {
     return value;
@@ -323,25 +424,57 @@ function formOverviewLayout(compData) {
   codeMetricObj.alias = "Total files";
   codeMetricArr.push(codeMetricObj);
   buildCardStackTemplate(codeMetricArr, "codemetric-card-contents", 4);
-  buildCveList(compAnalysesCVE);
 }
 
-function buildCveList(compAnalysesCVE) {
-  $j('#cve-card-contents').empty();
-  if (compAnalysesCVE.length > 0) {
-    for (var i in compAnalysesCVE) {
-      var dataSetCveIDScore = [];
-      dataSetCveIDScore = compAnalysesCVE[i].split(':');
-      var strToAdd = '<li class="list-group-item">' + dataSetCveIDScore[0] + ', CVSS score of ' + dataSetCveIDScore[1] + '</li>';
-      $j('#cve-card-contents').append(strToAdd);
+function buildSecurity(cvss) {
+  if (cvss) {
+    var securityInfo = {};
+    var cvssValue = cvss.value;
+    if (cvssValue < 0) {
+      securityInfo.value = -1;
+    } else if (cvssValue < 7.0) {
+      securityInfo.value = cvssValue;
+    } else {
+      var cvssObj = cvssValue >= 0 ? getCvssObj(cvssValue) : null;
+      securityInfo = cvssObj;
+      securityInfo.id = cvss.id;
     }
+    buildCveList(securityInfo);
+  }
+}
+
+function buildCveList(securityInfo) {
+  $j('#cve-card-contents').empty();
+  if (securityInfo.value !== -1) {
+    var strToAdd = '<div class="row">' +
+      '<div class="col-sm-12"><br>' +
+      '<div class="cvss-id">' + securityInfo.id +
+      '<img class="security-icon" src="/static/bayesian/icons/' + securityInfo.iconClass + '.png"></img>' +
+      '</div>' +
+      '<div class="row cvss-data">' +
+      '<div class="col-sm-12"><br>' +
+      '<span class="cvss-score">' + securityInfo.value + '</span>' +
+      '<span class="cvss-score-label"><span class="label-1"> CVSS</span> score</span>' +
+      '<span class="cvss-indication"><b> ' + securityInfo.value + ' of 10</b> Total</span>' +
+      '</div>' +
+      '</div>' +
+      '<br><div class="progress">' +
+      '<div class="progress-bar ' + securityInfo.displayClass + '" role="progressbar" ' +
+      '" style="width:' + securityInfo.percentScore + '%" ' +
+      'title=' + securityInfo.value + '"cvss score">' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+
+    $j('#cve-card-contents').append(strToAdd);
   } else {
-    var strToAdd = '<div class="col-md-12">' +
+    var strToAdd = '<div class="row make-center"><div class="col-md-12">' +
       '<div class="row f8-icon-size overview-code-metric-icon"><br>' +
       '<img class="overview-icon" src="/static/bayesian/icons/269-info.svg"></img>' +
       '</div><br>' +
       '<div class="row f8-chart-numeric">No CVE or CVSS data available' +
-      '</div>' +
+      '</div></div>' +
       '</div>';
     $j('#cve-card-contents').append(strToAdd);
   }
@@ -373,10 +506,7 @@ function buildCardStackTemplate(cardDataSetSummary, cardcontentId, classGrid) {
   }
 }
 
-
-
-
-
+/*
 function render_stack_details(index) {
   reset_stack_details();
   var deps = dependencies_by_data_file(index, stack_data.result[index].components.length);
@@ -421,7 +551,7 @@ function reset_stack_details() {
   document.getElementById("usage").innerHTML = "";
   document.getElementById("popularity").innerHTML = "";
   document.getElementById("metadata").innerHTML = "";
-}
+}*/
 
 
 function render_request_list(project_name_param) {
@@ -437,13 +567,13 @@ function render_request_list(project_name_param) {
           var reqLen = data.results.length;
           var req = data.results[0];
           display_result(req.id, "", "");
-          //document.getElementById("requests-info").innerHTML = html;
         }
       }
     });
   });
 }
 
+/*
 function render_component_detail(ecosystem, package, version) {
   $j(document).ready(function () {
     var apiHost = "${bayesian.api.server}";
@@ -491,7 +621,7 @@ function render_component_detail(ecosystem, package, version) {
     });
   });
 
-}
+} 
 
 function keys(obj) {
   var keys = [];
@@ -583,3 +713,5 @@ function dependencies_by_data_file(data_file, deps_count) {
     return "<p>Number of indirectly declared dependencies: " + deps_count + " </p>";
   }
 }
+
+*/

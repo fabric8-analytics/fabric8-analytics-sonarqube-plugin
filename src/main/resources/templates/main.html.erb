@@ -2,6 +2,7 @@
 <!-- PatternFly Styles -->
 <link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'patternfly.css')-%>" type="text/css" media=screen>
 <link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'patternfly-additions.css')-%>" type="text/css" media=screen>
+<link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'component/c3.min.css')-%>" type="text/css" media=screen>
 
 <script src="<%= url_for_static(:plugin => 'bayesian', :path => 'component/underscore-min.js')-%>" type="text/javascript"></script>
 <script src="<%= url_for_static(:plugin => 'bayesian', :path => 'component/bootstrap.min.js')-%>" type="text/javascript"></script>
@@ -36,11 +37,11 @@ render_request_list('<%= @project.name -%>');
                                 Security
                             </h4>
                         </div>
-                        <div class="card-pf-body">
-                            <div class="row make-center">
+                        <div id="cve-card-contents" class="card-pf-body">
+                            <!--<div class="row make-center">
                                 <ul id="cve-card-contents" class="list-group">
                                 </ul>
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                 </div>
@@ -83,10 +84,7 @@ render_request_list('<%= @project.name -%>');
                         <div class="card-pf-body">
                             <div class="row make-center">
                                 <br>
-                                <!--<ul id="licence-card-contents" class="list-group">
-                                </ul>-->
                                 <div id="donut-chart-10" class="donut-chart-pf example-donut-chart-mini"></div>
-                                
                             </div>
                         </div>
                     </div>
