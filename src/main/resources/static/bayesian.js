@@ -189,76 +189,76 @@ function constructRecommenderUI(recommendations) {
 // ***************** dependencies *********************** //
 
 var cvssScale = {
-    low: {
-      start: 0.0,
-      end: 3.9,
-      iconClass: 'warningCVE',
-      displayClass: 'progress-bar-warning'
-    },
-    medium: {
-      start: 4.0,
-      end: 6.9,
-      iconClass: 'warningCVE',
-      displayClass: 'progress-bar-warning'
-    },
-    high: {
-      start: 7.0,
-      end: 10.0,
-      iconClass: 'dangerCVE',
-      displayClass: 'progress-bar-danger'
-    }
-  };
+  low: {
+    start: 0.0,
+    end: 3.9,
+    iconClass: 'warningCVE',
+    displayClass: 'progress-bar-warning'
+  },
+  medium: {
+    start: 4.0,
+    end: 6.9,
+    iconClass: 'warningCVE',
+    displayClass: 'progress-bar-warning'
+  },
+  high: {
+    start: 7.0,
+    end: 10.0,
+    iconClass: 'dangerCVE',
+    displayClass: 'progress-bar-danger'
+  }
+};
 
-   var keys = {
-    name: 'name',
-    currentVersion: 'curVersion',
-    latestVersion: 'latestVersion',
-    cveid: 'cveid',
-    cvss: 'cvss',
-    license: 'license',
-    linesOfCode: 'linesOfCode',
-    avgCycloComplexity: 'avgCycloComplexity',
-    noOfFiles: 'noOfFiles',
-    dateAdded: 'dateAdded',
-    publicPopularity: 'pubPopularity',
-    enterpriseUsage: 'enterpriseUsage',
-    teamUsage: 'teamUsage'
-  };
+var keys = {
+  name: 'name',
+  currentVersion: 'curVersion',
+  latestVersion: 'latestVersion',
+  cveid: 'cveid',
+  cvss: 'cvss',
+  license: 'license',
+  linesOfCode: 'linesOfCode',
+  avgCycloComplexity: 'avgCycloComplexity',
+  noOfFiles: 'noOfFiles',
+  dateAdded: 'dateAdded',
+  publicPopularity: 'pubPopularity',
+  enterpriseUsage: 'enterpriseUsage',
+  teamUsage: 'teamUsage'
+};
 
-  var headers = [
-    {
-      name: 'Name',
-      identifier: this.keys['name'],
-      isSortable: true
-    }, {
-      name: 'Current Version',
-      identifier: this.keys['currentVersion'],
-      isSortable: true
-    }, {
-      name: 'Latest Version',
-      identifier: this.keys['latestVersion']
-    }, {
-      name: 'CVE ID',
-      identifier: this.keys['cveid']
-    }, {
-      name: 'CVSS',
-      identifier: this.keys['cvss']
-    }, {
-      name: 'License',
-      identifier: this.keys['license']
-    }, {
-      name: 'Lines Of Code',
-      identifier: this.keys['linesOfCode'],
-      isSortable: true
-    }, {
-      name: 'Avgerage Cyclomatic Complexity',
-      identifier: this.keys['avgCycloComplexity']
-    }, {
-      name: 'Total Files',
-      identifier: this.keys['noOfFiles'],
-      isSortable: true
-    }
-  ];
+var headers = [
+  {
+    name: 'Name',
+    identifier: keys['name'],
+    isSortable: true
+  }, {
+    name: 'Current Version',
+    identifier: keys['currentVersion'],
+    isSortable: true
+  }, {
+    name: 'Latest Version',
+    identifier: keys['latestVersion']
+  }, {
+    name: 'CVE ID',
+    identifier: keys['cveid']
+  }, {
+    name: 'CVSS',
+    identifier: keys['cvss']
+  }, {
+    name: 'License',
+    identifier: keys['license']
+  }, {
+    name: 'Lines Of Code',
+    identifier: keys['linesOfCode'],
+    isSortable: true
+  }, {
+    name: 'Avgerage Cyclomatic Complexity',
+    identifier: keys['avgCycloComplexity']
+  }, {
+    name: 'Total Files',
+    identifier: keys['noOfFiles'],
+    isSortable: true
+  }
+];
 
 function getCvssObj(score) {
   if (score) {
