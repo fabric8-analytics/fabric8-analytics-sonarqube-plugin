@@ -2,7 +2,7 @@
 
 The instructions in this directory allow you to run a local SonarQube instance
 to experiment with custom plugins, and other aspects of possible integration
-between SonarQube and Project Bayesian
+between SonarQube and Project Fabric8-Analytics
 
 ## Running SonarQube locally
 
@@ -37,5 +37,5 @@ and click the "Restart Server" button.
 (This simple approach to injecting plugins via `docker-compose` was inspired by
 the data container approach in https://github.com/MehrCurry/docker-sonar )
 
-Alternatively you can build and "hot" deploy the Bayesian plugin with
+Alternatively you can build and "hot" deploy the Fabric8-Analytics plugin with
 `../sonarqube-widget/deploy.sh` script.
