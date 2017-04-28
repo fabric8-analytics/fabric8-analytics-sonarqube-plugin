@@ -1,4 +1,7 @@
-# Bayesian SonarQube Widget
+# Fabric8-Analytics SonarQube Plugin
+SonarQube plugin that includes sensor code to initiate a user stack analyses and widget code to present recommendations and other related information
+
+*Note on naming: The Fabric8-Analytics project has evolved from 2 different projects called "cucos" and "bayesian". We're currently in process of renaming the modules and updating documentation. Until that is completed, please consider "cucos" and "bayesian" to be synonyms of "Fabric8-Analytics".*
 
 ## Contributing
 
