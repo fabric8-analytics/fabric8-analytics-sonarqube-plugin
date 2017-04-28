@@ -1,5 +1,8 @@
 # Bayesian SonarQube Widget
 
+## Contributing
+
+See our [contributing guidelines](https://github.com/fabric8-analytics/common/blob/master/CONTRIBUTING.md) for more info.
 
 ## Build jar
 
