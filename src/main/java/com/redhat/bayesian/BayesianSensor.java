@@ -69,11 +69,12 @@ public class BayesianSensor implements Sensor {
 
 		String origin = context.settings().getString("sonar.projectName");
 		log.info(LOG_PREFIX + "Origin is: " + origin);
+		log.info(LOG_PREFIX + "URL: " + APIRestClient.getDefaultApiUrl() + "stack-analyses");
 
 		APIRestClient client = new APIRestClient();
 		String response = client.postMultipart(APIRestClient.getDefaultApiUrl() + "stack-analyses",
 												manifest_files.toArray(new String[0]),
-												origin);
+												origin, APIRestClient.getDefaultApiToken());
 		try{
 			/* 
 			 * Add logic to retry the response from the asynchronous /stack-analyses call 
@@ -95,25 +96,16 @@ public class BayesianSensor implements Sensor {
 			int retry_count = 10;
 
 			while(retry_count!= 0){
-				// log.info(response.getClass().getName());
-				// String id = json.getString("id");
 				if(status_response.contains("error")){
 					TimeUnit.SECONDS.sleep(20);
 					String url = APIRestClient.getDefaultApiUrl() + "stack-analyses/" + id;
-					System.out.println("url");
-					System.out.println(url);
-					status_response = client.get(url);
+					log.info("Retried URL: " + url);
+					status_response = client.get(url, APIRestClient.getDefaultApiToken());
 					retry_count -- ;
-					System.out.println(retry_count);
 				}
 				else {
 					break;
 				}
-
-
-			//Integer cvss_score = packageJson.getInt("cvss");
-			//log.info("cvss score:" + cvss_score);
-			//context.saveMeasure(new Measure<Double>(BayesianMetrics.CVSS, (double)cvss_score));
 			}
 			if(!(status_response.contains("error"))){
 				JSONObject obj = (JSONObject) parser.parse(status_response);
@@ -121,8 +113,6 @@ public class BayesianSensor implements Sensor {
 				array = (JSONArray)obj.get("result");
 				JSONObject component_object = (JSONObject)array.get(0);
 				JSONArray components = (JSONArray)component_object.get("components");
-				log.info("result" + components);
-				// Double cvss_score = 4.0;
 				float cvss_score = (float) 0.0;
 				for( int i = 0; i < components.size(); i++){
 						JSONObject eachComponent = (JSONObject)components.get(i);

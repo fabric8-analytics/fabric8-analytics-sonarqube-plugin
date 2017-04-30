@@ -1,4 +1,5 @@
 var stack_data = {};
+var token = "${bayesian.api.token}";
 
 function display_result(id, packageName, packageVersion, definitionFile) {
   definitionFile = definitionFile || "package.json";
@@ -11,15 +12,9 @@ function display_result(id, packageName, packageVersion, definitionFile) {
 }
 
 function setLicenceDonut(colData) {
-  var c3ChartDefaults = $j().c3ChartDefaults();
+  //var c3ChartDefaults = $j().c3ChartDefaults();
   var donutData = {
     type: 'donut',
-    colors: {
-      Cats: $j.pfPaletteColors.blue,
-      Hamsters: $j.pfPaletteColors.green,
-      Fish: $j.pfPaletteColors.orange,
-      Dogs: $j.pfPaletteColors.red
-    },
     columns: colData,
     onclick: function (d, i) { console.log("onclick", d, i); },
     onmouseover: function (d, i) { console.log("onmouseover", d, i); },
@@ -27,17 +22,21 @@ function setLicenceDonut(colData) {
   };
 
   // Small Donut Chart
-  var donutChartSmallConfig = c3ChartDefaults.getDefaultDonutConfig('8');
+  var donutChartSmallConfig = {};
   donutChartSmallConfig.bindto = '#donut-chart-10';
   donutChartSmallConfig.tooltip = { show: true };
   donutChartSmallConfig.data = donutData;
+  donutChartSmallConfig.donut =  {
+        title: " ",
+        width: 15
+    };
   donutChartSmallConfig.legend = {
     show: true,
     position: 'right'
   };
   donutChartSmallConfig.size = {
-    width: 250,
-    height: 115
+    width: 280,
+    height: 155
   };
   donutChartSmallConfig.tooltip = {
     contents: $j().pfDonutTooltipContents
@@ -49,6 +48,7 @@ function setLicenceDonut(colData) {
 function stackAnalysesCall(url) {
   jQuery.ajax({
     url: url,
+     headers: { "Authorization": 'Bearer ' + token},
     error: function (xhr, ajaxOptions, thrownError) {
       var msg = JSON.parse(xhr.responseText);
       document.getElementById("errors").innerHTML = "<div class=''>Error: " + msg.error + " </div>";
@@ -82,7 +82,8 @@ function formRecommendationList(stackAnalysesData) {
   if (stackAnalysesData.hasOwnProperty('recommendation')) {
     var recommendation = stackAnalysesData.recommendation.recommendations;
     var dependencies = stackAnalysesData.components;
-    if (recommendation && recommendation.hasOwnProperty('similar_stacks') && recommendation.similar_stacks.length > 0) {
+    if (recommendation && recommendation.hasOwnProperty('similar_stacks') && recommendation.similar_stacks.length > 0 &&
+            (recommendation.similar_stacks[0].analysis.missing_packages.length>0 || recommendation.similar_stacks[0].analysis.version_mismatch.length>0)) {
       var similarStacks = recommendation.similar_stacks;
       const analysis = similarStacks[0].analysis;
       var missingPackages = analysis.missing_packages;
@@ -98,7 +99,7 @@ function formRecommendationList(stackAnalysesData) {
         '<div class="list-view-pf-body">' +
         '<div class="list-view-pf-description">' +
         '<div class="list-group-item-text">' +
-        '<b>We have no recommendations for you.</b> Your stack looks great!' +
+        '<b>No recommendations.</b> Below is some general information about it.' +
         '</div>' +
         '</div>' +
         '</div>' +
@@ -309,17 +310,18 @@ function buildDependenciesUI(dependencies) {
     dependency = {};
     eachOne = dependencies[i];
     var cycloMaticValue = eachOne['code_metrics']['average_cyclomatic_complexity'];
+    var codeLines = eachOne['code_metrics']['code_lines'];
+    var totalFiles = eachOne['code_metrics']['total_files'];
+
     dependency[keys['name']] = eachOne['name'];
     dependency[keys['currentVersion']] = eachOne['version'];
     dependency[keys['latestVersion']] = eachOne['latest_version'] || 'NA';
     dependency[keys['cveid']] = getCveId(eachOne['security']);
     dependency[keys['cvss']] = getCvssString(eachOne['security']);
     dependency[keys['license']] = eachOne['licenses'];
-    dependency[keys['linesOfCode']] = eachOne['code_metrics']['code_lines'];
-
-    dependency[keys['avgCycloComplexity']]
-      = cycloMaticValue !== -1 ? cycloMaticValue : 'NA';
-    dependency[keys['noOfFiles']] = eachOne['code_metrics']['total_files'];
+    dependency[keys['linesOfCode']] = codeLines !== -1 ? codeLines : 'NA';
+    dependency[keys['avgCycloComplexity']] = cycloMaticValue !== -1 ? cycloMaticValue : 'NA';
+    dependency[keys['noOfFiles']] = totalFiles !== -1 ? totalFiles : 'NA';
     dependenciesList.push(dependency);
   }
 
@@ -561,6 +563,7 @@ function render_request_list(project_name_param) {
     jQuery.ajax({
       url: apiHost + 'stack-analyses/by-origin/' + project_name_param,
       type: 'GET',
+      headers: { "Authorization": 'Bearer ' + token},
       success: function (data) {
         if (data.status == "success") {
           var html = "";
