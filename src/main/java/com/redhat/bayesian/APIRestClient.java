@@ -43,7 +43,6 @@ public class APIRestClient {
 	public String get(String url, String authToken) {
 		String response = "";
 		String header = "Bearer " + authToken;
-		System.out.println ("Header: " + header);
 		CloseableHttpClient httpClient = HttpClients.createDefault();
 		try {
 			HttpGet httpGetRequest = new HttpGet(url);
@@ -70,7 +69,6 @@ public class APIRestClient {
 
 		boolean noFiles = true;
 		String header = "Bearer " + authToken;
-		System.out.println ("Header: " + header);
 
 		for (String inputFile: inputFiles) {
 			File f = new File(inputFile);
