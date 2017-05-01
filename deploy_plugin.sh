@@ -10,7 +10,7 @@ then
 fi
 
 mvn sonar:sonar clean package
-cp target/sonar-bayesian-plugin-1.0-SNAPSHOT.jar sonarqube-alpine/extensions/plugins
+cp target/sonar-bayesian-plugin-1.0-SNAPSHOT.jar sonarqube-deploy/extensions/plugins
 
 docker restart sonar
 

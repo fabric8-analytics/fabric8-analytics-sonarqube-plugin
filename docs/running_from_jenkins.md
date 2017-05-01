@@ -28,7 +28,7 @@ sonar.projectVersion=1.0.0
 sonar.sources=.
 
 # SonarQube server with Fabric8-Analytics plugin installed
-sonar.host.url=http://sonar-test.lab.eng.rdu2.redhat.com/
+sonar.host.url=<SonarQube server URL>
 ```
 
 Note it's also possible to leave some of the parameters out and specify them in Jenkins instead.
@@ -71,9 +71,9 @@ Create a new project (optional, it's possible to use an existing one):
 oc new-project fabric8-analytics-demo
 ```
 
-Import the [image](https://gitlab.cee.redhat.com/msrb/openshift-jenkins-with-sonar-plugin) from the internal RH registry:
+Import the [image](https://github.com/fabric8-analytics/fabric8-analytics-sonarqube-plugin/tree/master/openshift-jenkins-with-sonar-plugin) from the registry:
 ```
-oc import-image docker-registry.usersys.redhat.com/bayesian/jenkins-2-centos7-with-sonarqube --insecure=true --confirm
+oc import-image <docker registry>/jenkins-2-centos7-with-sonarqube --insecure=true --confirm
 ```
 
 Create a new application from the newly imported image:
