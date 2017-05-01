@@ -11,7 +11,7 @@ import org.sonar.api.SonarPlugin;
   @Property(
     key = BayesianConstants.SERVER_URL_PROPERTY,
     name = "Server URL",
-    description = "Example : http://cucos-01.lab.eng.brq.redhat.com:32000/api/v1/",
+    description = "http://<Bayesian API URL>/api/v1/",
     global = true,
     project = true,
     module = false
