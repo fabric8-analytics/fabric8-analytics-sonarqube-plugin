@@ -2,7 +2,7 @@
 <!-- PatternFly Styles -->
 <link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'patternfly.css')-%>" type="text/css" media=screen>
 <link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'patternfly-additions.css')-%>" type="text/css" media=screen>
-<link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'component/c3.min.css')-%>" type="text/css" media=screen>
+<!-- <link rel=StyleSheet href="<%= url_for_static(:plugin => 'bayesian', :path => 'component/c3.min.css')-%>" type="text/css" media=screen> -->
 
 <script src="<%= url_for_static(:plugin => 'bayesian', :path => 'component/underscore-min.js')-%>" type="text/javascript"></script>
 <script src="<%= url_for_static(:plugin => 'bayesian', :path => 'component/bootstrap.min.js')-%>" type="text/javascript"></script>
@@ -83,7 +83,7 @@ render_request_list('<%= @project.name -%>');
                         </div>
                         <div class="card-pf-body">
                             <div class="row make-center">
-                                <br>
+                                
                                 <div id="donut-chart-10" class="donut-chart-pf example-donut-chart-mini"></div>
                             </div>
                         </div>

@@ -220,7 +220,7 @@ color: #fff;
 }
 
 .c3-tooltip td{
-  padding-left:5px; 
+  padding-left:5px !important; 
 }
 
 .security-icon{
@@ -231,4 +231,8 @@ color: #fff;
 .dependencies-cve-icon{
   width: 15px;
   height: 15px;
+}
+
+.c3-chart-arc text {
+    display: none !important;
 }

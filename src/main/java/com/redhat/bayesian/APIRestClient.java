@@ -40,20 +40,20 @@ public class APIRestClient {
 		this.url = url;
 	}
 	
-	public String get(String url) {
+	public String get(String url, String authToken) {
 		String response = "";
-		//HttpClient httpClient = new DefaultHttpClient();
+		String header = "Bearer " + authToken;
 		CloseableHttpClient httpClient = HttpClients.createDefault();
-    try {
-      HttpGet httpGetRequest = new HttpGet(url);
+		try {
+			HttpGet httpGetRequest = new HttpGet(url);
+			httpGetRequest.setHeader("Authorization", header);
 			ResponseHandler<String> responseHandler = new BasicResponseHandler();
 			response = httpClient.execute(httpGetRequest, responseHandler);
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      httpClient.getConnectionManager().shutdown();
-    }
+		} catch (Exception e) {
+		  e.printStackTrace();
+		} finally {
+		  httpClient.getConnectionManager().shutdown();
+		}
 		return response;
 	}
 	
@@ -62,12 +62,14 @@ public class APIRestClient {
 		return "";
 	}
 	
-	public String postMultipart(String url, String [] inputFiles, String origin) {
+	public String postMultipart(String url, String [] inputFiles, String origin, String authToken) {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		HttpPost httpPost = new HttpPost(url);
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 
 		boolean noFiles = true;
+		String header = "Bearer " + authToken;
+
 		for (String inputFile: inputFiles) {
 			File f = new File(inputFile);
 			if (f.isFile()) {
@@ -83,6 +85,7 @@ public class APIRestClient {
 			}
 			HttpEntity reqEntity = builder.build();
 			httpPost.setEntity(reqEntity);
+			httpPost.setHeader("Authorization", header);
 
 			try {
 				ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -116,5 +119,23 @@ public class APIRestClient {
 			new IllegalStateException(config + " resource is missing");
 		}
 		return url;
+	}
+
+	public static String getDefaultApiToken() {
+
+		String config = "/config.properties";
+
+		String token = null;
+		try (InputStream in = APIRestClient.class.getResourceAsStream(config)) {
+			Properties properties = new Properties();
+			properties.load(in);
+			token = properties.getProperty("bayesian.api.token");
+			if (token == null) {
+				new IllegalStateException("bayesian.api.token property is null");
+			}
+		} catch (IOException e) {
+			new IllegalStateException(config + " resource is missing");
+		}
+		return token;
 	}
 }
